@@ -1,0 +1,65 @@
+# -
+Суслов Артём ИСП-22-9 
+import telebot
+from telebot import types
+
+API_TOKEN = '8073529771:AAEYX0hgCaYZsjV4hXiNUFrQdx_0CoTkfkc'
+bot = telebot.TeleBot(API_TOKEN)
+
+users = {}
+
+@bot.message_handler(commands=['start'])
+def start(message):
+    bot.send_message(message.chat.id, "Привет! Я бот для расчета декораций. Выберите один из вариантов:", reply_markup=main_menu())
+
+def main_menu():
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    item1 = types.KeyboardButton("Расчет обоев")
+    item2 = types.KeyboardButton("Расчет краски")
+    item3 = types.KeyboardButton("Расчет плитки")
+    markup.add(item1, item2, item3)
+    return markup
+
+@bot.message_handler(func=lambda message: True)
+def handle_choice(message):
+    if message.text == "Расчет обоев":
+        bot.send_message(message.chat.id, "Введите размеры комнаты (длина и ширина через пробел):")
+        bot.register_next_step_handler(message, calculate_wallpaper)
+
+    elif message.text == "Расчет краски":
+        bot.send_message(message.chat.id, "Введите размеры комнаты (длина и ширина через пробел):")
+        bot.register_next_step_handler(message, calculate_paint)
+
+    elif message.text == "Расчет плитки":
+        bot.send_message(message.chat.id, "Введите размеры комнаты (длина и ширина через пробел):")
+        bot.register_next_step_handler(message, calculate_tile)
+
+def calculate_wallpaper(message):
+    try:
+        length, width = map(float, message.text.split())
+        area = 2 * (length + width) * 2.5 
+        wallpaper_rolls = area / 5 
+        bot.send_message(message.chat.id, f"Вам понадобится {wallpaper_rolls:.2f} рулонов обоев.")
+    except ValueError:
+        bot.send_message(message.chat.id, "Пожалуйста, введите корректные числа.")
+
+def calculate_paint(message):
+    try:
+        length, width = map(float, message.text.split())
+        area = length * width * 2.5
+        paint_liters = area / 10
+        bot.send_message(message.chat.id, f"Вам понадобится {paint_liters:.2f} литров краски.")
+    except ValueError:
+        bot.send_message(message.chat.id, "Пожалуйста, введите корректные числа.")
+
+def calculate_tile(message):
+    try:
+        length, width = map(float, message.text.split())
+        area = length * width 
+        tile_boxes = area / 1.44
+        bot.send_message(message.chat.id, f"Вам понадобится {tile_boxes:.2f} коробок плитки.")
+    except ValueError:
+        bot.send_message(message.chat.id, "Пожалуйста, введите корректные числа.")
+
+if __name__ == '__main__':
+    bot.polling(none_stop=True)
